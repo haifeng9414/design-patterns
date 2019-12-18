@@ -210,33 +210,35 @@ public class ShrinkSpell extends Command {
 
 使用：
 ```java
-public static void main(String[] args) {
-    // 巫师能够发出命令
-    Wizard wizard = new Wizard();
-    // 命令执行时作用的对象
-    Goblin goblin = new Goblin();
+public class Application {
+    public static void main(String[] args) {
+        // 巫师能够发出命令
+        Wizard wizard = new Wizard();
+        // 命令执行时作用的对象
+        Goblin goblin = new Goblin();
 
-    goblin.printStatus();
+        goblin.printStatus();
 
-    // 对哥布林施放收缩咒语
-    wizard.castSpell(new ShrinkSpell(), goblin);
-    goblin.printStatus();
+        // 对哥布林施放收缩咒语
+        wizard.castSpell(new ShrinkSpell(), goblin);
+        goblin.printStatus();
 
-    // 对哥布林施放消失咒语
-    wizard.castSpell(new InvisibilitySpell(), goblin);
-    goblin.printStatus();
+        // 对哥布林施放消失咒语
+        wizard.castSpell(new InvisibilitySpell(), goblin);
+        goblin.printStatus();
 
-    wizard.undoLastSpell();
-    goblin.printStatus();
+        wizard.undoLastSpell();
+        goblin.printStatus();
 
-    wizard.undoLastSpell();
-    goblin.printStatus();
+        wizard.undoLastSpell();
+        goblin.printStatus();
 
-    wizard.redoLastSpell();
-    goblin.printStatus();
+        wizard.redoLastSpell();
+        goblin.printStatus();
 
-    wizard.redoLastSpell();
-    goblin.printStatus();
+        wizard.redoLastSpell();
+        goblin.printStatus();
+    }
 }
 
 /*

@@ -1,156 +1,70 @@
-# 组合模式
+# 装饰者模式
 
 ## 目的
-将对象组合成树形结构以表示“部分-整体”的层次结构。组合模式使得用户对单个对象和组合对象的使用具有一致性。
+用于动态地给一个对象添加一些额外的职责。就增加功能来说，Decorator模式相比生成子类更为灵活。装饰者模式以对客户端透明的方式扩展对象的功能，是继承关系的一个替代方案。
 
 ## 优点
-1. 高层模块调用简单。
-2. 节点自由增加。
+1. 装饰者模式和继承的作用都是对现有的类增加新的功能，但装饰者模式有着比继承更灵活的组合方式。装饰者模式可以在运行的时候决定需要增加还是去除一种“装饰”以及什么“装饰”。继承则没有这样的灵活性，它对类功能的扩展是在运行之前就确定了的。
+2. 得益于装饰者模式在组合上的灵活性和便利性，可以将各种装饰类进行组合，从而较为简单的创造各种不同的行为集合，实现多种多样的功能。
 
 ## 缺点
-在使用组合模式时，某个组件使用其他组件时使用的是实现类，而不是接口，违反了依赖倒置原则。
+1. 装饰者的对象和它装饰的对象本质上是完全不同的，装饰模式会生成许多的对象，导致区分各种对象变得困难。
+2. 由于使用相同的标识，对于程序的理解和排错过程的难度也会随之增加。
 
 ## 例子
-字母可以组成单词，单词可以组成句子，单词、单词和句子都可以打印：
 ```java
-/**
-* 组合抽象类，组合中涉及到的类都继承该抽象类，赋予他们成为组合的能力，
-* 同时组合抽象类定义了组合中涉及到的类的行为，如下面的打印行为
-*/
-public abstract class LetterComposite {
-    private List<LetterComposite> children = new ArrayList<>();
+public interface Troll {
+    void attack();
 
-    public void add(LetterComposite letter) {
-        children.add(letter);
-    }
+    int getAttackPower();
 
-    public int count() {
-        return children.size();
-    }
-
-    protected void printThisBefore() {
-    }
-
-    protected void printThisAfter() {
-    }
-
-    /**
-     * 组合的行为，这里就是打印
-     */
-    public void print() {
-        printThisBefore();
-        for (LetterComposite letter : children) {
-            letter.print();
-        }
-        printThisAfter();
-    }
+    void fleeBattle();
 }
 
-/**
- * 字母，打印行为就是打印自己，字母也继承自LetterComposite，使其具有成为组合的能力，
- * 但实际上一个字母不可再分割
- */
-public class Letter extends LetterComposite {
-    private char c;
+// 普通的Troll接口实现
+public class SimpleTroll implements Troll {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleTroll.class);
 
-    public Letter(char c) {
-        this.c = c;
-    }
-
-    // 重写不是必须的，这里重写只是为了明确字母不可分割
     @Override
-    public void add(LetterComposite letter) {
-        throw new UnsupportedOperationException();
+    public void attack() {
+        LOGGER.info("The troll tries to grab you!");
     }
 
     @Override
-    protected void printThisBefore() {
-        System.out.print(c);
-    }
-}
-
-/**
- * 单词由字母组成，打印行为就是打印字母之前打印一个空格
- */
-public class Word extends LetterComposite {
-
-    /**
-     * Constructor
-     */
-    public Word(List<Letter> letters) {
-        for (Letter l : letters) {
-            this.add(l);
-        }
+    public int getAttackPower() {
+        return 10;
     }
 
     @Override
-    protected void printThisBefore() {
-        System.out.print(" ");
+    public void fleeBattle() {
+        LOGGER.info("The troll shrieks in horror and runs away!");
     }
 }
 
-/**
- * 句子由单词构成，打印行为就是打印完单词后打印句号
- */
-public class Sentence extends LetterComposite {
+// 装饰者
+public class ClubbedTroll implements Troll {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClubbedTroll.class);
 
-    /**
-     * Constructor
-     */
-    public Sentence(List<Word> words) {
-        for (Word w : words) {
-            this.add(w);
-        }
+    private Troll decorated;
+
+    public ClubbedTroll(Troll decorated) {
+        this.decorated = decorated;
     }
 
     @Override
-    protected void printThisAfter() {
-        System.out.print(".\n");
-    }
-}
-
-/**
- * 方便返回组合对象
- */
-public class Messenger {
-    public LetterComposite messageFromOrcs() {
-        List<Word> words = new ArrayList<>();
-
-        words.add(new Word(Arrays.asList(new Letter('W'), new Letter('h'), new Letter('e'), new Letter(
-                'r'), new Letter('e'))));
-        words.add(new Word(Arrays.asList(new Letter('t'), new Letter('h'), new Letter('e'), new Letter(
-                'r'), new Letter('e'))));
-        words.add(new Word(Arrays.asList(new Letter('i'), new Letter('s'))));
-        words.add(new Word(Arrays.asList(new Letter('a'))));
-        words.add(new Word(Arrays.asList(new Letter('w'), new Letter('h'), new Letter('i'), new Letter(
-                'p'))));
-        words.add(new Word(Arrays.asList(new Letter('t'), new Letter('h'), new Letter('e'), new Letter(
-                'r'), new Letter('e'))));
-        words.add(new Word(Arrays.asList(new Letter('i'), new Letter('s'))));
-        words.add(new Word(Arrays.asList(new Letter('a'))));
-        words.add(new Word(Arrays.asList(new Letter('w'), new Letter('a'), new Letter('y'))));
-
-        return new Sentence(words);
-
+    public void attack() {
+        decorated.attack();
+        LOGGER.info("The troll swings at you with a club!");
     }
 
-    public LetterComposite messageFromElves() {
-        List<Word> words = new ArrayList<>();
+    @Override
+    public int getAttackPower() {
+        return decorated.getAttackPower() + 10;
+    }
 
-        words.add(new Word(Arrays.asList(new Letter('M'), new Letter('u'), new Letter('c'), new Letter(
-                'h'))));
-        words.add(new Word(Arrays.asList(new Letter('w'), new Letter('i'), new Letter('n'), new Letter(
-                'd'))));
-        words.add(new Word(Arrays.asList(new Letter('p'), new Letter('o'), new Letter('u'), new Letter(
-                'r'), new Letter('s'))));
-        words.add(new Word(Arrays.asList(new Letter('f'), new Letter('r'), new Letter('o'), new Letter(
-                'm'))));
-        words.add(new Word(Arrays.asList(new Letter('y'), new Letter('o'), new Letter('u'), new Letter(
-                'r'))));
-        words.add(new Word(Arrays.asList(new Letter('m'), new Letter('o'), new Letter('u'), new Letter(
-                't'), new Letter('h'))));
-
-        return new Sentence(words);
+    @Override
+    public void fleeBattle() {
+        decorated.fleeBattle();
     }
 }
 ```
@@ -175,9 +89,15 @@ public class Application {
 
 /*
 输出：
-17:35:07.610 [main] INFO com.dhf.Application - Message from the orcs: 
- Where there is a whip there is a way.
-17:35:07.617 [main] INFO com.dhf.Application - Message from the elves: 
- Much wind pours from your mouth.
+21:59:11.321 [main] INFO com.dhf.Application - A simple looking troll approaches.
+21:59:11.325 [main] INFO com.dhf.decorator.SimpleTroll - The troll tries to grab you!
+21:59:11.325 [main] INFO com.dhf.decorator.SimpleTroll - The troll shrieks in horror and runs away!
+21:59:11.325 [main] INFO com.dhf.Application - Simple troll power 10.
+
+21:59:11.327 [main] INFO com.dhf.Application - A troll with huge club surprises you.
+21:59:11.328 [main] INFO com.dhf.decorator.SimpleTroll - The troll tries to grab you!
+21:59:11.328 [main] INFO com.dhf.decorator.ClubbedTroll - The troll swings at you with a club!
+21:59:11.328 [main] INFO com.dhf.decorator.SimpleTroll - The troll shrieks in horror and runs away!
+21:59:11.328 [main] INFO com.dhf.Application - Clubbed troll power 20.
 */
 ```

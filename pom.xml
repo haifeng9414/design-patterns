@@ -25,6 +25,8 @@
         <module>chain</module>
         <module>command</module>
         <module>composite</module>
+        <module>decorator</module>
+        <module>facade</module>
     </modules>
 
     <dependencies>
