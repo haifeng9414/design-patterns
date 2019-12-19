@@ -27,6 +27,10 @@
         <module>composite</module>
         <module>decorator</module>
         <module>facade</module>
+        <module>factory-method</module>
+        <module>flyweight</module>
+        <module>interpreter</module>
+        <module>mediator</module>
     </modules>
 
     <dependencies>
