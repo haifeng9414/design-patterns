@@ -31,6 +31,14 @@
         <module>flyweight</module>
         <module>interpreter</module>
         <module>mediator</module>
+        <module>observer</module>
+        <module>prototype</module>
+        <module>proxy</module>
+        <module>singleton</module>
+        <module>state</module>
+        <module>strategy</module>
+        <module>template-method</module>
+        <module>visitor</module>
     </modules>
 
     <dependencies>
