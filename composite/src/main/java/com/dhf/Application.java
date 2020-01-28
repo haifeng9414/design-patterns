@@ -11,6 +11,7 @@ public class Application {
     public static void main(String[] args) {
         LOGGER.info("Message from the orcs: ");
 
+        // Messenger对象只是方便测试的工具类，默认创建了一个Sentence对象并添加了若干个Word对象
         LetterComposite orcMessage = new Messenger().messageFromOrcs();
         orcMessage.print();
 

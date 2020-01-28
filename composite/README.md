@@ -1,70 +1,116 @@
-# 装饰者模式
+# 组合模式
 
 ## 目的
-用于动态地给一个对象添加一些额外的职责。就增加功能来说，Decorator模式相比生成子类更为灵活。装饰者模式以对客户端透明的方式扩展对象的功能，是继承关系的一个替代方案。
+将对象组合成树形结构以表示“部分——整体”的层次结构。它在树型结构的问题中，模糊了简单元素和复杂元素的概念，客户程序可以像处理简单元素一样来处理复杂元素，从而使得客户程序与复杂元素的内部结构解耦。 
 
 ## 优点
-1. 装饰者模式和继承的作用都是对现有的类增加新的功能，但装饰者模式有着比继承更灵活的组合方式。装饰者模式可以在运行的时候决定需要增加还是去除一种“装饰”以及什么“装饰”。继承则没有这样的灵活性，它对类功能的扩展是在运行之前就确定了的。
-2. 得益于装饰者模式在组合上的灵活性和便利性，可以将各种装饰类进行组合，从而较为简单的创造各种不同的行为集合，实现多种多样的功能。
+1. 高层模块调用简单。
+2. 节点自由增加。
 
 ## 缺点
-1. 装饰者的对象和它装饰的对象本质上是完全不同的，装饰模式会生成许多的对象，导致区分各种对象变得困难。
-2. 由于使用相同的标识，对于程序的理解和排错过程的难度也会随之增加。
+在使用组合模式时，其叶子和树枝的声明都是实现类，而不是接口，违反了依赖倒置原则。
+
+## 组成部分
+1. Component：是组合中的所有对象的统一接口；可以在接口中实现类应当实现的货缺省的行为。
+1. Leaf：在组合中表示叶节点对象，顾名思义，叶节点没有子节点。
+1. Composite：定义有子部件的那些部件的行为，同时存储子部件，实现Component中与子部件有关的接口。
+1. Client：通过Component接口，操纵组合部件的对象。
 
 ## 例子
+一个句子由若干个单词组成，而单词又由若干个字母组成，句子和单词都能打印，以组合模式实现该功能的代码如下：
 ```java
-public interface Troll {
-    void attack();
+/**
+ * 组合抽象类，组合中涉及到的类都继承该抽象类，赋予他们成为组合的能力，
+ * 同时组合抽象类定义了组合中涉及到的类的行为，如下面的打印行为
+ */
+public abstract class LetterComposite {
+    private List<LetterComposite> children = new ArrayList<>();
 
-    int getAttackPower();
+    public void add(LetterComposite letter) {
+        children.add(letter);
+    }
 
-    void fleeBattle();
+    public int count() {
+        return children.size();
+    }
+
+    protected void printThisBefore() {
+    }
+
+    protected void printThisAfter() {
+    }
+
+    /**
+     * 组合的行为，这里就是打印
+     */
+    public void print() {
+        printThisBefore();
+        for (LetterComposite letter : children) {
+            letter.print();
+        }
+        printThisAfter();
+    }
 }
 
-// 普通的Troll接口实现
-public class SimpleTroll implements Troll {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleTroll.class);
+/**
+ * 字母，打印行为就是打印自己，字母也继承自LetterComposite，使其具有成为组合的能力，
+ * 但实际上一个字母不可再分割
+ */
+public class Letter extends LetterComposite {
+    private char c;
 
-    @Override
-    public void attack() {
-        LOGGER.info("The troll tries to grab you!");
+    public Letter(char c) {
+        this.c = c;
     }
 
     @Override
-    public int getAttackPower() {
-        return 10;
+    public void add(LetterComposite letter) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public void fleeBattle() {
-        LOGGER.info("The troll shrieks in horror and runs away!");
+    protected void printThisBefore() {
+        System.out.print(c);
     }
 }
 
-// 装饰者
-public class ClubbedTroll implements Troll {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClubbedTroll.class);
+/**
+ * 单词由字母组成，打印行为就是打印字母之前打印一个空格
+ */
+public class Word extends LetterComposite {
 
-    private Troll decorated;
-
-    public ClubbedTroll(Troll decorated) {
-        this.decorated = decorated;
+    /**
+     * Constructor
+     */
+    public Word(List<Letter> letters) {
+        for (Letter l : letters) {
+            this.add(l);
+        }
     }
 
     @Override
-    public void attack() {
-        decorated.attack();
-        LOGGER.info("The troll swings at you with a club!");
+    protected void printThisBefore() {
+        System.out.print(" ");
+    }
+}
+
+/**
+ * 句子由单词构成，打印行为就是打印完单词后打印句号
+ */
+public class Sentence extends LetterComposite {
+
+    /**
+     * Constructor
+     */
+    public Sentence(List<Word> words) {
+        for (Word w : words) {
+            this.add(w);
+        }
     }
 
     @Override
-    public int getAttackPower() {
-        return decorated.getAttackPower() + 10;
-    }
-
-    @Override
-    public void fleeBattle() {
-        decorated.fleeBattle();
+    protected void printThisAfter() {
+        System.out.print(".\n");
     }
 }
 ```
@@ -77,6 +123,7 @@ public class Application {
     public static void main(String[] args) {
         LOGGER.info("Message from the orcs: ");
 
+        // Messenger对象只是方便测试的工具类，默认创建了一个Sentence对象并添加了若干个Word对象
         LetterComposite orcMessage = new Messenger().messageFromOrcs();
         orcMessage.print();
 
@@ -89,15 +136,9 @@ public class Application {
 
 /*
 输出：
-21:59:11.321 [main] INFO com.dhf.Application - A simple looking troll approaches.
-21:59:11.325 [main] INFO com.dhf.decorator.SimpleTroll - The troll tries to grab you!
-21:59:11.325 [main] INFO com.dhf.decorator.SimpleTroll - The troll shrieks in horror and runs away!
-21:59:11.325 [main] INFO com.dhf.Application - Simple troll power 10.
-
-21:59:11.327 [main] INFO com.dhf.Application - A troll with huge club surprises you.
-21:59:11.328 [main] INFO com.dhf.decorator.SimpleTroll - The troll tries to grab you!
-21:59:11.328 [main] INFO com.dhf.decorator.ClubbedTroll - The troll swings at you with a club!
-21:59:11.328 [main] INFO com.dhf.decorator.SimpleTroll - The troll shrieks in horror and runs away!
-21:59:11.328 [main] INFO com.dhf.Application - Clubbed troll power 20.
+19:44:19.846 [main] INFO com.dhf.Application - Message from the orcs: 
+ Where there is a whip there is a way.
+19:44:19.863 [main] INFO com.dhf.Application - Message from the elves: 
+ Much wind pours from your mouth.
 */
 ```
