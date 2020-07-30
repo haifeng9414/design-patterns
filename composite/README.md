@@ -1,7 +1,7 @@
 # 组合模式
 
 ## 目的
-将对象组合成树形结构以表示“部分——整体”的层次结构。它在树型结构的问题中，模糊了简单元素和复杂元素的概念，客户程序可以像处理简单元素一样来处理复杂元素，从而使得客户程序与复杂元素的内部结构解耦。 
+将对象组合成树形结构以表示部分与整体的层次结构。它在树型结构的问题中，模糊了简单元素和复杂元素的概念，客户程序可以像处理简单元素一样来处理复杂元素，从而使得客户程序与复杂元素的内部结构解耦。 
 
 ## 优点
 1. 高层模块调用简单。
@@ -141,4 +141,137 @@ public class Application {
 19:44:19.863 [main] INFO com.dhf.Application - Message from the elves: 
  Much wind pours from your mouth.
 */
+```
+
+另外一个例子是设计一个类来表示文件系统中的目录，能方便地实现下面这些功能：
+- 动态地添加、删除某个目录下的子目录或文件；
+- 统计指定目录下的文件个数；
+- 统计指定目录下的文件总大小。
+
+组合模式很适合这个需求：
+```java
+// 组合模式中的公共父类，文件和文件夹都需要实现该抽象类
+public abstract class FileSystemNode {
+    protected String path;
+
+    public FileSystemNode(String path) {
+        this.path = path;
+    }
+
+    // 计算目录下的文件数量
+    public abstract int countNumOfFiles();
+    // 计算目录下的文件总大小
+    public abstract long countSizeOfFiles();
+
+    public String getPath() {
+        return path;
+    }
+}
+
+public class File extends FileSystemNode {
+    public File(String path) {
+        super(path);
+    }
+
+    // 文件直接返回1作为目录下文件数量
+    @Override
+    public int countNumOfFiles() {
+        return 1;
+    }
+
+    // 文件直接返回自己的大小作为目录下文件总大小
+    @Override
+    public long countSizeOfFiles() {
+        java.io.File file = new java.io.File(path);
+        if (!file.exists()) return 0;
+        return file.length();
+    }
+}
+
+public class Directory extends FileSystemNode {
+    // subNodes保存子节点，可能是文件也可能是目录
+    private List<FileSystemNode> subNodes = new ArrayList<>();
+
+    public Directory(String path) {
+        super(path);
+    }
+
+    // 循环求子节点的值
+    @Override
+    public int countNumOfFiles() {
+        int numOfFiles = 0;
+        for (FileSystemNode fileOrDir : subNodes) {
+        numOfFiles += fileOrDir.countNumOfFiles();
+        }
+        return numOfFiles;
+    }
+
+    // 循环求子节点的值
+    @Override
+    public long countSizeOfFiles() {
+        long sizeofFiles = 0;
+        for (FileSystemNode fileOrDir : subNodes) {
+        sizeofFiles += fileOrDir.countSizeOfFiles();
+        }
+        return sizeofFiles;
+    }
+
+    public void addSubNode(FileSystemNode fileOrDir) {
+        subNodes.add(fileOrDir);
+    }
+
+    public void removeSubNode(FileSystemNode fileOrDir) {
+        int size = subNodes.size();
+        int i = 0;
+        for (; i < size; ++i) {
+        if (subNodes.get(i).getPath().equalsIgnoreCase(fileOrDir.getPath())) {
+            break;
+        }
+        }
+        if (i < size) {
+        subNodes.remove(i);
+        }
+    }
+}
+
+// 使用
+public class Demo {
+    public static void main(String[] args) {
+        /**
+        * /
+        * /wz/
+        * /wz/a.txt
+        * /wz/b.txt
+        * /wz/movies/
+        * /wz/movies/c.avi
+        * /xzg/
+        * /xzg/docs/
+        * /xzg/docs/d.txt
+        */
+        Directory fileSystemTree = new Directory("/");
+        Directory node_wz = new Directory("/wz/");
+        Directory node_xzg = new Directory("/xzg/");
+        fileSystemTree.addSubNode(node_wz);
+        fileSystemTree.addSubNode(node_xzg);
+
+        File node_wz_a = new File("/wz/a.txt");
+        File node_wz_b = new File("/wz/b.txt");
+        Directory node_wz_movies = new Directory("/wz/movies/");
+        node_wz.addSubNode(node_wz_a);
+        node_wz.addSubNode(node_wz_b);
+        node_wz.addSubNode(node_wz_movies);
+
+        File node_wz_movies_c = new File("/wz/movies/c.avi");
+        node_wz_movies.addSubNode(node_wz_movies_c);
+
+        Directory node_xzg_docs = new Directory("/xzg/docs/");
+        node_xzg.addSubNode(node_xzg_docs);
+
+        File node_xzg_docs_d = new File("/xzg/docs/d.txt");
+        node_xzg_docs.addSubNode(node_xzg_docs_d);
+
+        System.out.println("/ files num:" + fileSystemTree.countNumOfFiles());
+        System.out.println("/wz/ files num:" + node_wz.countNumOfFiles());
+    }
+}
 ```

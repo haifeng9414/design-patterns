@@ -86,3 +86,23 @@ public class Application {
 13:51:07.525 [main] INFO com.dhf.strategy.TransportationVehicle - 驾车从北京去天津
 */
 ```
+
+实际上策略模式通常配合一个工厂类使用，将策略类的创建和使用解耦，这样比直接创建策略类的实现类更灵活，如果策略类是无状态的，还可以在工厂类中对策略类进行缓存：
+```java
+
+public class StrategyFactory {
+    private static final Map<String, Strategy> strategies = new HashMap<>();
+
+    static {
+        strategies.put("A", new ConcreteStrategyA());
+        strategies.put("B", new ConcreteStrategyB());
+    }
+
+    public static Strategy getStrategy(String type) {
+        if (type == null || type.isEmpty()) {
+        throw new IllegalArgumentException("type should not be empty.");
+        }
+        return strategies.get(type);
+    }
+}
+```

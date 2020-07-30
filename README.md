@@ -202,5 +202,38 @@
     - 性能是否有优化空间，比如，SQL、算法是否可以优化？
     - 是否有安全漏洞？比如输入输出校验是否全面？
 
-## 例子
+## 设计模式
+### 创建型
+主要解决对象的创建问题，将对象的创建和使用代码解耦，常用的有：
+- [单例模式](singleton/README.md)
+- [抽象工厂模式](abstract-factory/README.md)
+- [工厂方法模式](factory-method/README.md)
+- [建造者模式](builder/README.md)
+- [原型模式](prototype/README.md)
+
+### 结构型
+主要解决类或对象的组合或组装问题，将不同功能代码解耦，常用的有：
+- [代理模式](proxy/README.md)
+- [桥接模式](bridge/README.md)
+- [装饰器模式](decorator/README.md)
+- [适配器模式](adaptor/README.md)
+- [门面模式](facade/README.md)
+- [组合模式](composite/README.md)
+- [享元模式](flyweight/README.md)
+
+### 行为型
+主要解决类或对象之间的交互问题，将不同的行为代码解耦，常用的有：
+- [观察者模式](observer/README.md)
+- [模版方法模式](template-method/README.md)
+- [策略模式](strategy/README.md)
+- [责任链模式](chain/README.md)
+- [状态模式](state/README.md)
+- [访问者模式](visitor/README.md)
+- [命令模式](command/README.md)
+- [解释器模式](interpreter/README.md)
+- [中介模式](mediator/README.md)
+- 迭代器模式
+- 备忘录模式
+
+## 其他
 - [极客时间《设计模式之美》 - 39讲](https://time.geekbang.org/column/article/193221)

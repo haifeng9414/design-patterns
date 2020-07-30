@@ -1,7 +1,9 @@
-# 观察者模式
+# 观察者模式（发布订阅模式）
 
 ## 目的
 建立一种对象与对象之间的依赖关系，一个对象发生改变时将自动通知其他对象，其他对象将相应做出反应。
+
+观察者模式中被依赖的对象叫作被观察者（Observable），依赖的对象叫作观察者（Observer），不过实际项目中的称呼比较灵活，有多种叫法，如Subject-Observer、Publisher-Subscriber、Producer-Consumer、EventEmitter-EventListener、Dispatcher-Listener等，这些都可以认为是观察者模式
 
 ## 优点
 1. 观察者模式可以实现表示层和数据逻辑层的分离，并定义了稳定的消息更新传递机制，抽象了更新接口，使得可以有各种各样不同的表示层作为具体观察者角色。

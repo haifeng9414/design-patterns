@@ -160,3 +160,121 @@ public class Application {
 21:05:22.458 [main] INFO com.dhf.flyweight.HolyWaterPotion - You feel blessed. (Potion=1650967483)
 */
 ```
+
+还有一个例子，假设我们在开发一个棋牌游戏（比如象棋）。一个游戏厅中有成千上万个房间，每个房间对应一个棋局。棋局要保存每个棋子的数据，比如：棋子类型（将、相、士、炮等）、棋子颜色（红方、黑方）、棋子在棋局中的位置。利用这些数据，就能显示一个完整的棋盘给玩家。具体的代码如下：
+```java
+
+public class ChessPiece {//棋子
+    private int id;
+    private String text;
+    private Color color;
+    private int positionX;
+    private int positionY;
+
+    public ChessPiece(int id, String text, Color color, int positionX, int positionY) {
+        this.id = id;
+        this.text = text;
+        this.color = color;
+        this.positionX = positionX;
+        this.positionY = positionX;
+    }
+
+    public static enum Color {
+        RED, BLACK
+    }
+
+    // ...省略其他属性和getter/setter方法...
+}
+
+public class ChessBoard {//棋局
+    private Map<Integer, ChessPiece> chessPieces = new HashMap<>();
+
+    public ChessBoard() {
+        init();
+    }
+
+    private void init() {
+        chessPieces.put(1, new ChessPiece(1, "車", ChessPiece.Color.BLACK, 0, 0));
+        chessPieces.put(2, new ChessPiece(2,"馬", ChessPiece.Color.BLACK, 0, 1));
+        //...省略摆放其他棋子的代码...
+    }
+
+    public void move(int chessPieceId, int toPositionX, int toPositionY) {
+        //...省略...
+    }
+}
+```
+
+如果游戏大厅中有成千上万的房间，那保存这么多棋局对象就会消耗大量的内存。上面的实现在内存中会有大量的相似对象。这些相似对象的id、text、color都是相同的，唯独positionX、positionY不同。可以通过享元模式将棋子的id、text、color属性拆分出来，设计成独立的类，并且作为享元供多个棋盘复用。这样，棋盘只需要记录每个棋子的位置信息就可以了：
+```java
+
+// 享元类，将棋子的id、text、color作为共享的属性
+public class ChessPieceUnit {
+    private int id;
+    private String text;
+    private Color color;
+
+    public ChessPieceUnit(int id, String text, Color color) {
+        this.id = id;
+        this.text = text;
+        this.color = color;
+    }
+
+    public static enum Color {
+        RED, BLACK
+    }
+
+    // ...省略其他属性和getter方法...
+}
+
+// 享元模式中的关键实现，享元对象的工厂
+public class ChessPieceUnitFactory {
+    private static final Map<Integer, ChessPieceUnit> pieces = new HashMap<>();
+
+    // 通过静态代码块初始化享元对象
+    static {
+        pieces.put(1, new ChessPieceUnit(1, "車", ChessPieceUnit.Color.BLACK));
+        pieces.put(2, new ChessPieceUnit(2,"馬", ChessPieceUnit.Color.BLACK));
+        //...省略摆放其他棋子的代码...
+    }
+
+    public static ChessPieceUnit getChessPiece(int chessPieceId) {
+        return pieces.get(chessPieceId);
+    }
+}
+
+// 棋子类，有一个享元属性
+public class ChessPiece {
+    private ChessPieceUnit chessPieceUnit;
+    private int positionX;
+    private int positionY;
+
+    public ChessPiece(ChessPieceUnit unit, int positionX, int positionY) {
+        this.chessPieceUnit = unit;
+        this.positionX = positionX;
+        this.positionY = positionY;
+    }
+    // 省略getter、setter方法
+}
+
+public class ChessBoard {
+    private Map<Integer, ChessPiece> chessPieces = new HashMap<>();
+
+    public ChessBoard() {
+        init();
+    }
+
+    private void init() {
+        // 为棋盘创建棋子对象，通过ChessPieceUnitFactory.getChessPiece方法实现id、text、color属性的共享
+        chessPieces.put(1, new ChessPiece(
+                ChessPieceUnitFactory.getChessPiece(1), 0,0));
+        chessPieces.put(1, new ChessPiece(
+                ChessPieceUnitFactory.getChessPiece(2), 1,0));
+        //...省略摆放其他棋子的代码...
+    }
+
+    public void move(int chessPieceId, int toPositionX, int toPositionY) {
+        //...省略...
+    }
+}
+```
