@@ -12,6 +12,8 @@
 
 用一个中介对象来封装一系列的对象交互，中介者使各对象不需要显式地相互引用，从而使其耦合松散，而且可以独立地改变它们之间的交互。中介者模式又称为调停者模式。
 
+举个例子，为了让飞机在飞行的时候互不干扰，每架飞机都需要知道其他飞机每时每刻的位置，这就需要时刻跟其他飞机通信。飞机通信形成的通信网络就会无比复杂。这个时候，通过引入塔台这样一个中介，让每架飞机只跟塔台来通信，发送自己的位置给塔台，由塔台来负责每架飞机的航线调度。这样就大大简化了通信网络。
+
 ## 优点
 1. 简化了对象之间的交互。
 2. 将各同事解耦。
@@ -145,3 +147,139 @@ public class Application {
 23:33:11.440 [main] INFO com.dhf.mediator.PartyMemberBase - Rogue arrives for dinner
 */
 ```
+
+另一个例子，假设有一个比较复杂的对话框，对话框中有很多控件，比如按钮、文本框、下拉框等。当对某个控件进行操作的时候，其他控件会做出相应的反应，比如，在下拉框中选择注册，注册相关的控件就会显示在对话框中。如果在下拉框中选择登录，登录相关的控件就会显示在对话框中。下面的简单的实现：
+```java
+public class UIControl {
+    private static final String LOGIN_BTN_ID = "login_btn";
+    private static final String REG_BTN_ID = "reg_btn";
+    private static final String USERNAME_INPUT_ID = "username_input";
+    private static final String PASSWORD_INPUT_ID = "pswd_input";
+    private static final String REPEATED_PASSWORD_INPUT_ID = "repeated_pswd_input";
+    private static final String HINT_TEXT_ID = "hint_text";
+    private static final String SELECTION_ID = "selection";
+
+    public static void main(String[] args) {
+        Button loginButton = (Button)findViewById(LOGIN_BTN_ID);
+        Button regButton = (Button)findViewById(REG_BTN_ID);
+        Input usernameInput = (Input)findViewById(USERNAME_INPUT_ID);
+        Input passwordInput = (Input)findViewById(PASSWORD_INPUT_ID);
+        Input repeatedPswdInput = (Input)findViewById(REPEATED_PASSWORD_INPUT_ID);
+        Text hintText = (Text)findViewById(HINT_TEXT_ID);
+        Selection selection = (Selection)findViewById(SELECTION_ID);
+
+        // 处理按钮点击逻辑
+        loginButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String username = usernameInput.text();
+                String password = passwordInput.text();
+                //校验数据...
+                //做业务处理...
+            }
+        });
+
+        regButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            //获取usernameInput、passwordInput、repeatedPswdInput数据...
+            //校验数据...
+            //做业务处理...
+            }
+        });
+
+        //...省略selection下拉选择框相关代码....
+    }
+}
+```
+
+上面的业务逻辑分别写在了各个组件的onClick方法中，下面再使用中介者模式实现：
+```java
+
+public interface Mediator {
+    void handleEvent(Component component, String event);
+}
+
+public class LandingPageDialog implements Mediator {
+    private Button loginButton;
+    private Button regButton;
+    private Selection selection;
+    private Input usernameInput;
+    private Input passwordInput;
+    private Input repeatedPswdInput;
+    private Text hintText;
+
+    @Override
+    public void handleEvent(Component component, String event) {
+        if (component.equals(loginButton)) {
+            String username = usernameInput.text();
+            String password = passwordInput.text();
+            //校验数据...
+            //做业务处理...
+        } else if (component.equals(regButton)) {
+            //获取usernameInput、passwordInput、repeatedPswdInput数据...
+            //校验数据...
+            //做业务处理...
+        } else if (component.equals(selection)) {
+            String selectedItem = selection.select();
+            if (selectedItem.equals("login")) {
+                usernameInput.show();
+                passwordInput.show();
+                repeatedPswdInput.hide();
+                hintText.hide();
+                //...省略其他代码
+            } else if (selectedItem.equals("register")) {
+                //....
+            }
+        }
+    }
+}
+
+public class UIControl {
+    private static final String LOGIN_BTN_ID = "login_btn";
+    private static final String REG_BTN_ID = "reg_btn";
+    private static final String USERNAME_INPUT_ID = "username_input";
+    private static final String PASSWORD_INPUT_ID = "pswd_input";
+    private static final String REPEATED_PASSWORD_INPUT_ID = "repeated_pswd_input";
+    private static final String HINT_TEXT_ID = "hint_text";
+    private static final String SELECTION_ID = "selection";
+
+    public static void main(String[] args) {
+        Button loginButton = (Button)findViewById(LOGIN_BTN_ID);
+        Button regButton = (Button)findViewById(REG_BTN_ID);
+        Input usernameInput = (Input)findViewById(USERNAME_INPUT_ID);
+        Input passwordInput = (Input)findViewById(PASSWORD_INPUT_ID);
+        Input repeatedPswdInput = (Input)findViewById(REPEATED_PASSWORD_INPUT_ID);
+        Text hintText = (Text)findViewById(HINT_TEXT_ID);
+        Selection selection = (Selection)findViewById(SELECTION_ID);
+
+        Mediator dialog = new LandingPageDialog();
+        dialog.setLoginButton(loginButton);
+        dialog.setRegButton(regButton);
+        dialog.setUsernameInput(usernameInput);
+        dialog.setPasswordInput(passwordInput);
+        dialog.setRepeatedPswdInput(repeatedPswdInput);
+        dialog.setHintText(hintText);
+        dialog.setSelection(selection);
+
+        loginButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.handleEvent(loginButton, "click");
+            }
+        });
+
+        regButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.handleEvent(regButton, "click");
+            }
+        });
+
+        //....
+    }
+}
+```
+
+中介者模式将分散在各个控件中的原本业务逻辑都集中到了中介类中。实际上，这样做既有好处，也有坏处。好处是简化了控件之间的交互，坏处是中介类有可能会变成大而复杂的上帝类。所以，在使用中介模式的时候，要根据实际的情况，平衡对象之间交互的复杂度和中介类本身的复杂度。
+
